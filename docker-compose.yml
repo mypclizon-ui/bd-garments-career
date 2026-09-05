@@ -1,0 +1,48 @@
+version: "3.9"
+
+# PostgreSQL databases for the two portals. Each service gets its own,
+# isolated database so the main job portal and the government jobs site
+# are fully independent.
+
+services:
+  # Database for the main private-sector job portal.
+  db-main:
+    image: postgres:16-alpine
+    container_name: bdgc-db-main
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bdgc
+      POSTGRES_PASSWORD: bdgc_password
+      POSTGRES_DB: bdgc_main
+    ports:
+      - "5432:5432"
+    volumes:
+      - bdgc_main_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bdgc -d bdgc_main"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Database for the government jobs portal (separate site).
+  db-gov:
+    image: postgres:16-alpine
+    container_name: bdgc-db-gov
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bdgc_gov
+      POSTGRES_PASSWORD: bdgc_gov_password
+      POSTGRES_DB: bdgc_gov
+    ports:
+      - "5433:5432"
+    volumes:
+      - bdgc_gov_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bdgc_gov -d bdgc_gov"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bdgc_main_data:
+  bdgc_gov_data:
