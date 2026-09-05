@@ -1,0 +1,18 @@
+# Render Blueprint — one-click deploy for the gov-jobs backend + Postgres.
+services:
+  - type: web
+    name: bdgc-gov-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bdgc-gov-db
+          property: connectionString
+
+databases:
+  - name: bdgc-gov-db
+    plan: free
