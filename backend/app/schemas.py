@@ -4,6 +4,21 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
+class GovJobCreate(BaseModel):
+    """Payload for publishing a new govt job circular (admin only)."""
+    title: str
+    ministry: Optional[str] = None
+    department: Optional[str] = None
+    location: Optional[str] = None
+    vacancy_count: int = 1
+    grade: Optional[str] = None
+    salary_scale: Optional[str] = None
+    education: Optional[str] = None
+    description: Optional[str] = None
+    deadline: Optional[str] = None
+    source_url: Optional[str] = None
+
+
 class GovJobOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,9 +1,10 @@
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .database import Base, engine, get_db
+from .config import settings
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(
@@ -16,15 +17,18 @@ app = FastAPI(
 # origin as the main domain), plus localhost during development.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3100",
-        "http://localhost:3000",
-        "https://www.bdgarmentscareer.com",
-        "https://bdgarmentscareer.com",
-    ],
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def require_admin(x_admin_key: str | None = Header(default=None)):
+    """Simple admin gate for write operations (POST/PATCH)."""
+    expected = getattr(settings, "admin_api_key", "change-me")
+    if x_admin_key != expected:
+        raise HTTPException(status_code=401, detail="Invalid admin key")
 
 
 @app.get("/jobs", response_model=list[schemas.GovJobOut])
@@ -49,6 +53,16 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
     job = db.get(models.GovJob, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+@app.post("/jobs", response_model=schemas.GovJobOut, status_code=201, dependencies=[Depends(require_admin)])
+def create_job(payload: schemas.GovJobCreate, db: Session = Depends(get_db)):
+    """Admin-only endpoint to publish a new govt job circular."""
+    job = models.GovJob(**payload.model_dump())
+    db.add(job)
+    db.commit()
+    db.refresh(job)
     return job
 
 
