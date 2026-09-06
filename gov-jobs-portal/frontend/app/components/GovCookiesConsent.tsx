@@ -1,0 +1,55 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+/** GDPR-style cookies consent for the gov jobs portal. */
+export default function GovCookiesConsent() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (!window.localStorage.getItem("bdgc_gov_cookies")) {
+        const t = setTimeout(() => setVisible(true), 1200);
+        return () => clearTimeout(t);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  function decide(accept: boolean) {
+    try {
+      window.localStorage.setItem("bdgc_gov_cookies", accept ? "accepted" : "declined");
+    } catch {
+      /* ignore */
+    }
+    setVisible(false);
+  }
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.3 }}
+          style={{
+            position: "fixed", left: "50%", bottom: 16, transform: "translateX(-50%)",
+            maxWidth: 640, width: "calc(100% - 32px)", background: "var(--brand-deep)",
+            color: "#f5f5f5", borderRadius: 16, padding: "1.1rem 1.3rem",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.4)", zIndex: 12000, fontFamily: "var(--font-body)", fontSize: "0.92rem",
+          }}
+        >
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <strong style={{ display: "block", fontSize: "1.02rem", marginBottom: "0.25rem" }}>🍪 Privacy & cookies</strong>
+              We use cookies to remember your preferences and improve this government jobs portal. By continuing you accept our cookie policy.
+            </div>
+            <div style={{ display: "flex", gap: "0.6rem" }}>
+              <button onClick={() => decide(true)} style={{ background: "var(--gold)", color: "var(--brand-deep)", border: "none", borderRadius: 999, padding: "0.5rem 1.2rem", fontWeight: 700, cursor: "pointer" }}>Accept</button>
+              <button onClick={() => decide(false)} style={{ background: "transparent", color: "#ddd", border: "1px solid #666", borderRadius: 999, padding: "0.5rem 1.2rem", cursor: "pointer" }}>Decline</button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
