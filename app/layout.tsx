@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import GovHeader from "./components/GovHeader";
+import GovFooter from "./components/GovFooter";
 import PageWrapper from "./components/PageWrapper";
+import GovChatPopup from "./components/GovChatPopup";
+import GovCookiesConsent from "./components/GovCookiesConsent";
 
 export const metadata: Metadata = {
-  title: "Bangladesh Government Job Portal",
-  description: "The latest government and public-sector job circulars across Bangladesh.",
+  title: "BD Garments Career Gov — Job Portal",
+  description: "Government and public-sector job circulars across Bangladesh.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,12 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <GovHeader />
         <PageWrapper>{children}</PageWrapper>
-        <footer className="gov-footer">
-          <div className="container gov-footer__inner">
-            <span>© {new Date().getFullYear()} Bangladesh Government Job Portal</span>
-            <span>Official notices · Updated daily</span>
-          </div>
-        </footer>
+        <GovFooter />
+        <GovChatPopup />
+        <GovCookiesConsent />
       </body>
     </html>
   );
